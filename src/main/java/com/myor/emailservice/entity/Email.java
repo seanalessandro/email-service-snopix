@@ -5,15 +5,17 @@ import java.util.List;
 public class Email {
 	String from;
 	String to;
+	String cc;
+	String bcc;
 	String subject;
 	String message;
-    private String contentType;
-    private List < Object > attachments;
- 
-    public Email() {
-        contentType = "text/html";
-    }
-    
+	private String contentType;
+	private List<Object> attachments;
+
+	public Email() {
+		contentType = "text/html";
+	}
+
 	public String getFrom() {
 		return from;
 	}
@@ -28,6 +30,22 @@ public class Email {
 
 	public void setTo(String to) {
 		this.to = to;
+	}
+
+	public String getCc() {
+		return cc;
+	}
+
+	public void setCc(String cc) {
+		this.cc = cc;
+	}
+
+	public String getBcc() {
+		return bcc;
+	}
+
+	public void setBcc(String bcc) {
+		this.bcc = bcc;
 	}
 
 	public String getSubject() {
@@ -61,5 +79,5 @@ public class Email {
 	public void setAttachments(List<Object> attachments) {
 		this.attachments = attachments;
 	}
-    
+
 }

@@ -1,5 +1,8 @@
 package com.myor.emailservice.service.impl;
 
+import java.util.Arrays;
+
+import javax.mail.Message;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 
@@ -57,7 +60,8 @@ public class EmailServiceImpl implements EmailService {
 					logger.error("Failed to send email to: {} and no fallback account is configured. Error: {}",
 							email.getTo(), primaryError.getMessage(), primaryError);
 				} else {
-					logger.warn("Primary account failed to send email to: {}. Retrying with fallback account. Error: {}",
+					logger.warn(
+							"Primary account failed to send email to: {}. Retrying with fallback account. Error: {}",
 							email.getTo(), primaryError.getMessage());
 					try {
 						doSend(fallbackMailSender, email);
@@ -85,8 +89,42 @@ public class EmailServiceImpl implements EmailService {
 		mimeMessage.setContent(email.getMessage(), "text/html");
 		mimeMessageHelper.setSubject(email.getSubject());
 		mimeMessageHelper.setFrom(new InternetAddress(email.getFrom(), "SnOPiX Reminder System"));
+		if (email.getCc() != null
+				&& !email.getCc().trim().isEmpty()) {
+
+			mimeMessageHelper.setCc(
+					InternetAddress.parse(
+							normalizeAddresses(
+									email.getCc())));
+		}
+
+		if (email.getBcc() != null
+				&& !email.getBcc().trim().isEmpty()) {
+
+			mimeMessageHelper.setBcc(
+					InternetAddress.parse(
+							normalizeAddresses(
+									email.getBcc())));
+		}
 		mimeMessageHelper.setTo(InternetAddress.parse(email.getTo()));
 		mimeMessageHelper.setText(email.getMessage());
+
+		logger.info(
+        "[EMAIL SERVICE] TO={} CC={} BCC={} SUBJECT={}",
+        Arrays.toString(
+                mimeMessage.getRecipients(
+                        Message.RecipientType.TO)),
+        Arrays.toString(
+                mimeMessage.getRecipients(
+                        Message.RecipientType.CC)),
+        Arrays.toString(
+                mimeMessage.getRecipients(
+                        Message.RecipientType.BCC)),
+        email.getSubject()
+);
+
+sender.send(mimeMessageHelper.getMimeMessage());
+				
 		sender.send(mimeMessageHelper.getMimeMessage());
 	}
 
@@ -97,6 +135,16 @@ public class EmailServiceImpl implements EmailService {
 			// a database problem must never break email sending, so only log it
 			logger.error("Failed to save email log for: {}. Error: {}", email.getTo(), e.getMessage(), e);
 		}
+	}
+
+	private String normalizeAddresses(
+			String addresses) {
+
+		if (addresses == null) {
+			return "";
+		}
+
+		return addresses.replace(';', ',');
 	}
 
 	private void throttle() {
